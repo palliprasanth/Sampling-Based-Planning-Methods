@@ -103,7 +103,7 @@ int Graph::getNearestNeighbour(Node* cur_Node){
 	return min_id;
 }
 
-int Graph::getNearestNeighbour(double* cur_Node_angles, double* min_distance, int* movement_sign){
+int Graph::getNearestNeighbour(double* cur_Node_angles, double* min_distance, int* movement_sign, double* cur_node_angles){
 	Node* temp;
 	*min_distance = 10000.0;
 	int move_sign[5];
@@ -114,8 +114,15 @@ int Graph::getNearestNeighbour(double* cur_Node_angles, double* min_distance, in
 		distance = get_distance_angular(temp, cur_Node_angles, move_sign); 
 		if (distance < *min_distance){
 			*min_distance = distance;
-			movement_sign = move_sign;
+			for (int i=0; i<5; ++i){
+				movement_sign[i] = move_sign[i];
+			}
 			min_id = temp->node_id;
+			cur_node_angles[0] = temp->theta_1;
+			cur_node_angles[1] = temp->theta_2;
+			cur_node_angles[2] = temp->theta_3;
+			cur_node_angles[3] = temp->theta_4;
+			cur_node_angles[4] = temp->theta_5;
 		}		
 	}
 	return min_id;
