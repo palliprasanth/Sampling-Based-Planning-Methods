@@ -103,7 +103,7 @@ int Graph::getNearestNeighbour(Node* cur_Node){
 	return min_id;
 }
 
-int Graph::getNearestNeighbour(double* cur_Node_angles, double* min_distance, int* movement_sign, double* cur_node_angles){
+int Graph::getNearestNeighbour(double* Final_Node_angles, double* min_distance, int* movement_sign, double* cur_node_angles, double* difference_angles){
 	Node* temp;
 	*min_distance = 10000.0;
 	int move_sign[5];
@@ -111,7 +111,7 @@ int Graph::getNearestNeighbour(double* cur_Node_angles, double* min_distance, in
 	double distance;
 	for (list<Node>::iterator it = Vertices.begin(); it != Vertices.end(); it++){
 		temp = &(*it);
-		distance = get_distance_angular(temp, cur_Node_angles, move_sign); 
+		distance = get_distance_angular(temp, Final_Node_angles, move_sign, difference_angles); 
 		if (distance < *min_distance){
 			*min_distance = distance;
 			for (int i=0; i<5; ++i){
@@ -133,6 +133,7 @@ void Graph::print_Vertices(){
 	mexPrintf("Printing Vertices\n");
 	for (list<Node>::iterator it = Vertices.begin(); it != Vertices.end(); it++){
 		mexPrintf("node_id = %d\n",it->node_id);
+		mexPrintf("parent_id = %d\n",it->parent_id);
 		mexPrintf("q1 = %f\n",it->theta_1);
 		mexPrintf("q2 = %f\n",it->theta_2);
 		mexPrintf("q3 = %f\n",it->theta_3);

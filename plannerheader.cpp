@@ -233,12 +233,31 @@ double get_distance_angular(Node* node1, Node* node2){
 }
 
 
-double get_distance_angular(Node* node1, double* node2_angle, int* move_sign){
+double get_distance_angular(Node* node1, double* node2_angle, int* move_sign, double* difference_angles){
 	double distance = 0;
+	difference_angles[0] = angle_between(node1->theta_1,node2_angle[0], &move_sign[0]);
+	difference_angles[1] = angle_between(node1->theta_2,node2_angle[1], &move_sign[1]);
+	difference_angles[2] = angle_between(node1->theta_3,node2_angle[2], &move_sign[2]);
+	difference_angles[3] = angle_between(node1->theta_4,node2_angle[3], &move_sign[3]);
+	difference_angles[4] = angle_between(node1->theta_5,node2_angle[4], &move_sign[4]);
+	//distance = pow(angle_between(node1->theta_1,node2_angle[0], &move_sign[0]),2.0) + pow(angle_between(node1->theta_2,node2_angle[1],&move_sign[1]),2.0) + pow(angle_between(node1->theta_3,node2_angle[2],&move_sign[2]),2.0) + pow(angle_between(node1->theta_4,node2_angle[3],&move_sign[3]),2.0) + pow(angle_between(node1->theta_5,node2_angle[4],&move_sign[4]),2.0);
+	for (int i=0;i<5;i++){
+		distance += pow(difference_angles[i],2.0);
+	}
 
-	distance = pow(angle_between(node1->theta_1,node2_angle[0], &move_sign[0]),2.0) + pow(angle_between(node1->theta_2,node2_angle[1],&move_sign[1]),2.0) + pow(angle_between(node1->theta_3,node2_angle[2],&move_sign[2]),2.0) + pow(angle_between(node1->theta_4,node2_angle[3],&move_sign[3]),2.0) + pow(angle_between(node1->theta_5,node2_angle[4],&move_sign[4]),2.0);
 	distance = sqrt(distance);
 	return distance;
 
 }
 
+void convert_to_unit(double* input,int size){
+	double norm = 0.0;
+	for (int i=0; i<size; ++i){
+		norm += pow(input[i],2.0);
+	}
+	norm = sqrt(norm);
+	for (int i=0; i<size; ++i){
+		input[i] = input[i]/norm;
+	}
+	return;
+}

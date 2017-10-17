@@ -27,6 +27,7 @@ double rad2deg(double);
 double angle_between(double, double);
 double angle_between(double, double, int*);
 double get_distance_angular(Node*, Node*);
-double get_distance_angular(Node*, double*, int*);
+double get_distance_angular(Node*, double*, int*, double*);
+void convert_to_unit(double* ,int);
 void build_rrt(double*, int, int, double*, double*, int, double***, int*, int*);
 #endif 

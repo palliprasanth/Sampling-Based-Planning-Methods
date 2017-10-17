@@ -36,7 +36,7 @@ public:
 	void add_Edge(int, int);
 	void delete_Vertex(int);
 	int getNearestNeighbour(Node*);
-	int getNearestNeighbour(double*, double*, int*, double*);
+	int getNearestNeighbour(double*, double*, int*, double*, double*);
 	void print_Vertices();
 	void print_Edges();
 	~Graph();		
