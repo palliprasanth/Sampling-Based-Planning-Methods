@@ -10,7 +10,7 @@ using namespace std;
 
 Graph::Graph(){
 	counter = 1;
-	mexPrintf("Graph Created\n");
+	//mexPrintf("Graph Created\n");
 }
 
 list<Node>* Graph::get_Vertices(){
@@ -152,5 +152,5 @@ void Graph::print_Edges(){
 }
 
 Graph::~Graph(){
-	mexPrintf("Graph Destroyed\n");
+	//mexPrintf("Graph Destroyed\n");
 }

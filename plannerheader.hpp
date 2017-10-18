@@ -30,8 +30,8 @@ double get_distance_angular(Node*, Node*);
 double get_distance_angular(Node*, double*, int*, double*);
 void convert_to_unit(double* ,int);
 
-
+vector<int> connect_rrt(Graph* , double*, int, int, double*, int);
 vector<int> extend_rrt(Graph* , double* , int , int , double* , int );
-void build_rrt(double*, int, int, double*, double*, int, double***, int*, int*);
-void build_rrt_connect(double*, int, int, double*, double*, int, double***, int*, int*);
+void build_rrt(double*, int, int, double*, double*, int, double***, int*);
+void build_rrt_connect(double*, int, int, double*, double*, int, double***, int*);
 #endif 

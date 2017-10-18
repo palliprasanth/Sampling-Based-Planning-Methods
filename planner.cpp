@@ -56,34 +56,10 @@ static void planner(
      int* planner_id)
 {
 
+    //build_rrt(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
 
-    build_rrt(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength, planner_id);
-
-    //build_rrt_connect(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength, planner_id);
-    // for (j = 0; j < numofDOFs; j++){
-    //     if(distance < fabs(armstart_anglesV_rad[j] - armgoal_anglesV_rad[j]))
-    //         distance = fabs(armstart_anglesV_rad[j] - armgoal_anglesV_rad[j]);
-    // }
-    // int numofsamples = (int)(distance/(PI/20));
-    // if(numofsamples < 2){
-    //     mexPrintf("the arm is already at the goal\n");
-    //     return;
-    // }
-    // *plan = (double**) malloc(numofsamples*sizeof(double*));
-    // int firstinvalidconf = 1;
-    // for (i = 0; i < numofsamples; i++){
-    //     (*plan)[i] = (double*) malloc(numofDOFs*sizeof(double)); 
-    //     for(j = 0; j < numofDOFs; j++){
-    //         (*plan)[i][j] = armstart_anglesV_rad[j] + ((double)(i)/(numofsamples-1))*(armgoal_anglesV_rad[j] - armstart_anglesV_rad[j]);
-    //     }
-    //     if(!IsValidArmConfiguration((*plan)[i], numofDOFs, map, x_size, y_size) && firstinvalidconf)
-    //     {
-    //         firstinvalidconf = 1;
-    //         mexPrintf("ERROR: Invalid arm configuration!!!\n");
-    //     }
-    // }    
-    // *planlength = numofsamples;
-    
+    build_rrt_connect(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
+      
     return;
 }
 
