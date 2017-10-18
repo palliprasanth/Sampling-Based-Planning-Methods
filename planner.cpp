@@ -59,7 +59,7 @@ static void planner(
 
     build_rrt(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength, planner_id);
 
-    
+    //build_rrt_connect(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength, planner_id);
     // for (j = 0; j < numofDOFs; j++){
     //     if(distance < fabs(armstart_anglesV_rad[j] - armgoal_anglesV_rad[j]))
     //         distance = fabs(armstart_anglesV_rad[j] - armgoal_anglesV_rad[j]);
