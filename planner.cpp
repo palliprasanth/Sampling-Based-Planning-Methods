@@ -59,7 +59,8 @@ static void planner(
     //build_rrt(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
 
     build_rrt_connect(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
-      
+
+    //build_rrt_star(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);      
     return;
 }
 

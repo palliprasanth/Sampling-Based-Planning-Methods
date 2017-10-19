@@ -14,7 +14,7 @@ hold on;
 %N is the number of steps in the plan 
 armplan = armplanner(envmap, armstart, armgoal, planner_id); 
 
-fprintf(1, 'plan of length %d was found\n', size(armplan,1));
+%fprintf(1, 'plan of length %d was found\n', size(armplan,1));
 
 %draw the plan
 midx = size(envmap,2)/2;

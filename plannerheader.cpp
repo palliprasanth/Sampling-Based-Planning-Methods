@@ -27,6 +27,12 @@ using namespace std;
 //the length of each link in the arm (should be the same as the one used in runtest.m)
 #define LINKLENGTH_CELLS 10
 
+#define EPS 0.4
+
+# define VOL_HYPER 5.264
+# define MAX_NEIGHBOR EPS
+# define GAMMA 1.0
+
 void ContXY2Cell(double x, double y, short unsigned int* pX, short unsigned int *pY, int x_size, int y_size)
 {
 	double cellsize = 1.0;
@@ -260,4 +266,74 @@ void convert_to_unit(double* input,int size){
 		input[i] = input[i]/norm;
 	}
 	return;
+}
+
+double convert_to_unit_return_norm(double* input,int size){
+	double norm = 0.0;
+	for (int i=0; i<size; ++i){
+		norm += pow(input[i],2.0);
+	}
+	norm = sqrt(norm);
+	for (int i=0; i<size; ++i){
+		input[i] = input[i]/norm;
+	}
+	return norm;
+}
+
+double get_neighbourhood_distance(int number_of_vertices){
+	double distance;
+	distance = MIN((GAMMA/VOL_HYPER)*(log10(number_of_vertices)/number_of_vertices),number_of_vertices);
+	return distance;
+}
+
+int IsValidArmMovement(double* angles_start, double* angles_end , double* difference_angles, double norm, int* arm_sign, int numofDOFs, double* map,
+	int x_size, int y_size){
+	
+	/*
+	Trapped = -1
+	Advanced = 0
+	Reached = 1
+	*/
+
+	double distance = 0;
+	double temporary_angles[5];
+	int i,j,k;
+	for (j = 0; j < numofDOFs; j++){
+		temporary_angles[j] = difference_angles[j]*norm;
+	}
+
+	for (j = 0; j < numofDOFs; j++){
+		if(distance < temporary_angles[j])
+			distance = temporary_angles[j];
+	}
+
+	int numofsamples = (int)(distance/(PI/40));
+	double temp_angles[5], old_angles[5];
+	int counter = 0;
+
+
+	for (i = 0; i < numofsamples; i++){
+		for(j = 0; j < numofDOFs; j++){
+			old_angles[j] = temp_angles[j];
+			temp_angles[j] = angles_start[j] + ((double)(i+1)/(numofsamples))*(temporary_angles[j])*arm_sign[j];
+		}
+		counter ++;
+		if(!IsValidArmConfiguration(temp_angles, numofDOFs, map, x_size, y_size))
+		{
+			if (counter <= 1){
+				return -1;	
+			 }
+			else{
+				for (k = 0; k < numofDOFs; k++){
+					angles_end[k] = old_angles[k];
+				}
+				return 0;
+			}
+		}
+	}  
+
+	for (k = 0; k < numofDOFs; k++){
+		angles_end[k] = temp_angles[k];
+	} 
+	return 1;
 }
