@@ -23,15 +23,21 @@ int IsValidArmConfiguration(double*, int, double*, int, int);
 
 // Functions defined by me
 int IsValidArmMovement(double*, double*, double*, double, int*, int, double*, int, int);
+int IsValidArmMovement(double*, Node*, double*, int, double*, int, int);
+int IsValidArmMovement(Node*, Node*, double*, int, double*, int, int);
 double deg2rad(double);
 double rad2deg(double);
 double angle_between(double, double);
 double angle_between(double, double, int*);
 double get_distance_angular(Node*, Node*);
+double get_distance_angular(double*, double*);
+double get_distance_angular(Node* , double*);
 double get_distance_angular(Node*, double*, int*, double*);
+double get_distance_angular(Node*, Node*, int*, double*);
 void convert_to_unit(double* ,int);
 double convert_to_unit_return_norm(double* ,int);
 double get_neighbourhood_distance(int);
+void wrap_to_2pi(double* );
 
 vector<int> connect_rrt(Graph* , double*, int, int, double*, int);
 vector<int> extend_rrt(Graph* , double* , int , int , double* , int );
@@ -39,4 +45,5 @@ vector<int> extend_rrt_star(Graph* , double* , int , int , double* , int );
 void build_rrt(double*, int, int, double*, double*, int, double***, int*);
 void build_rrt_connect(double*, int, int, double*, double*, int, double***, int*);
 void build_rrt_star(double*, int, int, double*, double*, int, double***, int*);
+void build_prm(double*, int, int, double*, double*, int, double***, int*);
 #endif 

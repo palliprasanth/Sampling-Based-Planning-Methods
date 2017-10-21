@@ -27,11 +27,11 @@ using namespace std;
 //the length of each link in the arm (should be the same as the one used in runtest.m)
 #define LINKLENGTH_CELLS 10
 
-#define EPS 0.4
+#define EPS 0.3
 
 # define VOL_HYPER 5.264
 # define MAX_NEIGHBOR EPS
-# define GAMMA 1.0
+# define GAMMA 1
 
 void ContXY2Cell(double x, double y, short unsigned int* pX, short unsigned int *pY, int x_size, int y_size)
 {
@@ -196,6 +196,16 @@ double rad2deg(double input){
 	return (input*180.0)/PI;
 }
 
+void wrap_to_2pi(double* input){
+	while(*input < 0 || *input >= 2*PI){
+		if (*input < 0)
+			*input += 2*PI;
+		else
+			*input -= 2*PI;
+	}
+}
+
+
 double angle_between(double angle1, double angle2, int* move_sign){
 	double difference1 = angle1 - angle2;
 	double difference2 = angle2 - angle1;
@@ -239,6 +249,24 @@ double get_distance_angular(Node* node1, Node* node2){
 }
 
 
+
+double get_distance_angular(Node* node1, Node* node2, int* move_sign, double* difference_angles){
+	double distance = 0;
+	difference_angles[0] = angle_between(node1->theta_1,node2->theta_1, &move_sign[0]);
+	difference_angles[1] = angle_between(node1->theta_2,node2->theta_2, &move_sign[1]);
+	difference_angles[2] = angle_between(node1->theta_3,node2->theta_3, &move_sign[2]);
+	difference_angles[3] = angle_between(node1->theta_4,node2->theta_4, &move_sign[3]);
+	difference_angles[4] = angle_between(node1->theta_5,node2->theta_5, &move_sign[4]);
+	for (int i=0;i<5;i++){
+		distance += pow(difference_angles[i],2.0);
+	}
+
+	distance = sqrt(distance);
+	return distance;
+
+}
+
+
 double get_distance_angular(Node* node1, double* node2_angle, int* move_sign, double* difference_angles){
 	double distance = 0;
 	difference_angles[0] = angle_between(node1->theta_1,node2_angle[0], &move_sign[0]);
@@ -246,9 +274,43 @@ double get_distance_angular(Node* node1, double* node2_angle, int* move_sign, do
 	difference_angles[2] = angle_between(node1->theta_3,node2_angle[2], &move_sign[2]);
 	difference_angles[3] = angle_between(node1->theta_4,node2_angle[3], &move_sign[3]);
 	difference_angles[4] = angle_between(node1->theta_5,node2_angle[4], &move_sign[4]);
-	//distance = pow(angle_between(node1->theta_1,node2_angle[0], &move_sign[0]),2.0) + pow(angle_between(node1->theta_2,node2_angle[1],&move_sign[1]),2.0) + pow(angle_between(node1->theta_3,node2_angle[2],&move_sign[2]),2.0) + pow(angle_between(node1->theta_4,node2_angle[3],&move_sign[3]),2.0) + pow(angle_between(node1->theta_5,node2_angle[4],&move_sign[4]),2.0);
 	for (int i=0;i<5;i++){
 		distance += pow(difference_angles[i],2.0);
+	}
+
+	distance = sqrt(distance);
+	return distance;
+
+}
+
+double get_distance_angular(Node* node1, double* node2_angle){
+	double distance = 0;
+	double temp_angles[5];
+	temp_angles[0] = angle_between(node1->theta_1,node2_angle[0]);
+	temp_angles[1] = angle_between(node1->theta_2,node2_angle[1]);
+	temp_angles[2] = angle_between(node1->theta_3,node2_angle[2]);
+	temp_angles[3] = angle_between(node1->theta_4,node2_angle[3]);
+	temp_angles[4] = angle_between(node1->theta_5,node2_angle[4]);
+	for (int i=0;i<5;i++){
+		distance += pow(temp_angles[i],2.0);
+	}
+
+	distance = sqrt(distance);
+	return distance;
+
+}
+
+double get_distance_angular(double* node1_angle, double* node2_angle){
+	double distance = 0;
+	double temp_angles[5];
+	temp_angles[0] = angle_between(node1_angle[0],node2_angle[0]);
+	temp_angles[1] = angle_between(node1_angle[1],node2_angle[1]);
+	temp_angles[2] = angle_between(node1_angle[2],node2_angle[2]);
+	temp_angles[3] = angle_between(node1_angle[3],node2_angle[3]);
+	temp_angles[4] = angle_between(node1_angle[4],node2_angle[4]);
+	//distance = pow(angle_between(node1->theta_1,node2_angle[0], &move_sign[0]),2.0) + pow(angle_between(node1->theta_2,node2_angle[1],&move_sign[1]),2.0) + pow(angle_between(node1->theta_3,node2_angle[2],&move_sign[2]),2.0) + pow(angle_between(node1->theta_4,node2_angle[3],&move_sign[3]),2.0) + pow(angle_between(node1->theta_5,node2_angle[4],&move_sign[4]),2.0);
+	for (int i=0;i<5;i++){
+		distance += pow(temp_angles[i],2.0);
 	}
 
 	distance = sqrt(distance);
@@ -282,7 +344,7 @@ double convert_to_unit_return_norm(double* input,int size){
 
 double get_neighbourhood_distance(int number_of_vertices){
 	double distance;
-	distance = MIN((GAMMA/VOL_HYPER)*(log10(number_of_vertices)/number_of_vertices),number_of_vertices);
+	distance = MIN(pow(((GAMMA/VOL_HYPER)*(log(number_of_vertices)/number_of_vertices)),(float)1/(float)5),number_of_vertices);
 	return distance;
 }
 
@@ -316,6 +378,7 @@ int IsValidArmMovement(double* angles_start, double* angles_end , double* differ
 		for(j = 0; j < numofDOFs; j++){
 			old_angles[j] = temp_angles[j];
 			temp_angles[j] = angles_start[j] + ((double)(i+1)/(numofsamples))*(temporary_angles[j])*arm_sign[j];
+			wrap_to_2pi(&temp_angles[j]);
 		}
 		counter ++;
 		if(!IsValidArmConfiguration(temp_angles, numofDOFs, map, x_size, y_size))
@@ -336,4 +399,87 @@ int IsValidArmMovement(double* angles_start, double* angles_end , double* differ
 		angles_end[k] = temp_angles[k];
 	} 
 	return 1;
+}
+
+
+int IsValidArmMovement(double* angles_start, Node* angles_end, double* distance_neigh, int numofDOFs, double* map, int x_size, int y_size){
+
+
+double difference_angles[5], temporary_angles[5];
+int arm_sign[5];
+double distance = 0;
+int i,j,k;
+
+double norm =  get_distance_angular(angles_end, angles_start, arm_sign, difference_angles);
+*distance_neigh = norm;
+convert_to_unit(difference_angles, numofDOFs);
+for (j = 0; j < numofDOFs; j++){
+		temporary_angles[j] = difference_angles[j]*norm;
+	}
+
+	for (j = 0; j < numofDOFs; j++){
+		if(distance < temporary_angles[j])
+			distance = temporary_angles[j];
+	}
+
+	int numofsamples = (int)(distance/(PI/40));
+	double temp_angles[5];
+
+	for (i = 0; i < numofsamples; i++){
+		for(j = 0; j < numofDOFs; j++){
+			temp_angles[j] = angles_start[j] + ((double)(i+1)/(numofsamples))*(temporary_angles[j])*-1*arm_sign[j];
+			wrap_to_2pi(&temp_angles[j]);
+		}
+		if(!IsValidArmConfiguration(temp_angles, numofDOFs, map, x_size, y_size))
+		{
+			return 0;
+		}
+	}  
+
+	return 1;
+
+}
+
+int IsValidArmMovement(Node* angles_start, Node* angles_end, double* distance_neigh, int numofDOFs, double* map, int x_size, int y_size){
+
+
+double difference_angles[5], temporary_angles[5], start_angles[5];
+int arm_sign[5];
+double distance = 0;
+int i,j,k;
+
+start_angles[0] = angles_start->theta_1;
+start_angles[1] = angles_start->theta_2;
+start_angles[2] = angles_start->theta_3;
+start_angles[3] = angles_start->theta_4;
+start_angles[4] = angles_start->theta_5;
+
+double norm =  get_distance_angular(angles_start, angles_end, arm_sign, difference_angles);
+*distance_neigh = norm;
+convert_to_unit(difference_angles, numofDOFs);
+for (j = 0; j < numofDOFs; j++){
+		temporary_angles[j] = difference_angles[j]*norm;
+	}
+
+	for (j = 0; j < numofDOFs; j++){
+		if(distance < temporary_angles[j])
+			distance = temporary_angles[j];
+	}
+
+	int numofsamples = (int)(distance/(PI/40));
+	double temp_angles[5];
+
+	for (i = 0; i < numofsamples; i++){
+		for(j = 0; j < numofDOFs; j++){
+			temp_angles[j] = start_angles[j] + ((double)(i+1)/(numofsamples))*(temporary_angles[j])*arm_sign[j];
+			wrap_to_2pi(&temp_angles[j]);
+		}
+		if(!IsValidArmConfiguration(temp_angles, numofDOFs, map, x_size, y_size))
+		{
+			return 0;
+		}
+	}  
+
+	return 1;
+
 }

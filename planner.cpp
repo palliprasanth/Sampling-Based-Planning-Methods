@@ -56,11 +56,24 @@ static void planner(
      int* planner_id)
 {
 
-    //build_rrt(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
+    switch(*planner_id){
+        case 0:
+        build_rrt(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
+        break;
 
-    build_rrt_connect(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
+        case 1:
+        build_rrt_connect(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
+        break;
 
-    //build_rrt_star(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);      
+        case 2:
+        build_rrt_star(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
+        break;
+
+        case 3:
+        build_prm(map, x_size, y_size, armstart_anglesV_rad, armgoal_anglesV_rad, numofDOFs, plan, planlength);
+        break;
+
+    }   
     return;
 }
 

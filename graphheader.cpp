@@ -51,7 +51,7 @@ void Graph::add_Vertex(double theta_1, double theta_2, double theta_3, double th
 	number_of_vertices++;
 }
 
-void Graph::add_Vertex_with_cost(double theta_1, double theta_2, double theta_3, double theta_4, double theta_5, int parentid, double cost){
+int Graph::add_Vertex_with_cost(double theta_1, double theta_2, double theta_3, double theta_4, double theta_5, int parentid, double cost){
 	Node temp_node;
 	temp_node.node_id = counter;
 	temp_node.theta_1 = theta_1;
@@ -65,6 +65,11 @@ void Graph::add_Vertex_with_cost(double theta_1, double theta_2, double theta_3,
 
 	counter++;
 	number_of_vertices++;
+	return temp_node.node_id;
+}
+
+void Graph::add_Edge(Node* parent, Node* child){
+	parent->children.push_back(child);
 }
 
 int Graph::add_Vertex_ret_id(double theta_1, double theta_2, double theta_3, double theta_4, double theta_5, int parentid){
@@ -151,7 +156,78 @@ int Graph::getNearestNeighbour(double* Final_Node_angles, double* min_distance, 
 	return min_id;
 }
 
-void getNearestNeighboursinNeighbourhood(Node* cur_Node, list<Node*> Neighbourhood, double* neighbour_distance){
+
+Node* Graph::getNearestNeighbourAddress(double* Final_Node_angles, double* min_distance, int* movement_sign, double* cur_node_angles, double* difference_angles){
+	Node* temp;
+	Node* temp2;
+	*min_distance = 10000.0;
+	int move_sign[5];
+	int min_id = -1;
+	double distance;
+	for (list<Node>::iterator it = Vertices.begin(); it != Vertices.end(); it++){
+		temp = &(*it);
+		distance = get_distance_angular(temp, Final_Node_angles, move_sign, difference_angles); 
+		if (distance < *min_distance){
+			*min_distance = distance;
+			for (int i=0; i<5; ++i){
+				movement_sign[i] = move_sign[i];
+			}
+			temp2 = temp;
+			cur_node_angles[0] = temp->theta_1;
+			cur_node_angles[1] = temp->theta_2;
+			cur_node_angles[2] = temp->theta_3;
+			cur_node_angles[3] = temp->theta_4;
+			cur_node_angles[4] = temp->theta_5;
+		}		
+	}
+	return temp2;
+}
+
+
+void Graph::getNearestNeighboursinNeighbourhood(double* cur_Node, int cur_id, list<Node*>* Neighbourhood, double neighbour_distance){
+	Node* temp;
+	double min_dist = 10000.0;
+	int min_id = -1;
+	double distance;
+	for (list<Node>::iterator it = Vertices.begin(); it != Vertices.end(); it++){
+		temp = &(*it);
+		distance = get_distance_angular(temp, cur_Node); 
+		if (distance < neighbour_distance){
+			if (temp->node_id!=cur_id)
+				Neighbourhood->push_back(temp);
+		}		
+	}
+
+}
+
+void Graph::delete_Edge(Node* Parent_node, Node* Child_Node){
+
+	int nodeid = Child_Node->node_id;
+
+	for (list<Node*>::iterator it = Parent_node->children.begin(); it != Parent_node->children.end(); it++){
+		if ((*it)->node_id == nodeid){
+			Parent_node->children.erase(it);
+			return;
+		}
+	}
+}
+
+void Graph::propagate_costs(Node* Parent_node){
+
+	int num_children = Parent_node->children.size();
+	//mexPrintf("Propagating Cost\n");
+	if (num_children == 0){
+		return;
+	}
+	else{
+		for (list<Node*>::iterator it = Parent_node->children.begin(); it != Parent_node->children.end(); it++){
+			double distance = get_distance_angular(Parent_node, *it);
+			(*it)->cost = Parent_node->cost + distance;
+			this->propagate_costs(*it);
+		}
+	}
+
+	return;
 
 }
 
@@ -160,6 +236,8 @@ void Graph::print_Vertices(){
 	for (list<Node>::iterator it = Vertices.begin(); it != Vertices.end(); it++){
 		mexPrintf("node_id = %d\n",it->node_id);
 		mexPrintf("parent_id = %d\n",it->parent_id);
+		mexPrintf("Cost = %f\n",it->cost);
+		mexPrintf("Number of children: %d\n",it->children.size());
 		mexPrintf("q1 = %f\n",it->theta_1);
 		mexPrintf("q2 = %f\n",it->theta_2);
 		mexPrintf("q3 = %f\n",it->theta_3);
