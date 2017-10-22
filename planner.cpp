@@ -8,8 +8,10 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <queue>
 #include "graphheader.hpp"
 #include "plannerheader.hpp"
+#include "constants.hpp"
 
 using namespace std;
 
@@ -38,11 +40,6 @@ using namespace std;
 #if !defined(MIN)
 #define	MIN(A, B)	((A) < (B) ? (A) : (B))
 #endif
-
-#define PI 3.141592654
-
-//the length of each link in the arm (should be the same as the one used in runtest.m)
-#define LINKLENGTH_CELLS 10
 
 static void planner(
 		   double*	map,
@@ -173,8 +170,3 @@ void mexFunction( int nlhs, mxArray *plhs[],
     return;
     
 }
-
-
-
-
-

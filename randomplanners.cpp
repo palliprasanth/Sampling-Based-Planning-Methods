@@ -3,12 +3,14 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <queue>
 #include <random>
 #include <iterator>
 #include <ctime>
 #include <chrono>
 #include "graphheader.hpp"
 #include "plannerheader.hpp"
+#include "constants.hpp"
 
 using namespace std;
 
@@ -22,17 +24,6 @@ using namespace std;
 #define	MIN(A, B)	((A) < (B) ? (A) : (B))
 #endif
 
-#define PI 3.141592654
-
-//the length of each link in the arm (should be the same as the one used in runtest.m)
-#define LINKLENGTH_CELLS 10
-
-#define EPS 0.3
-
-
-# define VOL_HYPER 5.264
-# define MAX_NEIGHBOR EPS
-# define GAMMA 1	
 
 
 int cur_node_id, nearest_node_id;
@@ -46,7 +37,7 @@ double temp_distance;
 double temp_cost, min_cost;
 double distance_to_neighbor;
 
-vector<int> connect_rrt(Graph* rrt_tree, double* map, int x_size, int y_size, double* current_sample_angles, int numofDOFs){
+vector<int> connect_rrt(Tree* rrt_tree, double* map, int x_size, int y_size, double* current_sample_angles, int numofDOFs){
 	vector<int> connect_return = {0,1,1};
 	while (connect_return[0] == 0){
 		//mexPrintf("Entered Connect RRT\n");
@@ -56,7 +47,7 @@ vector<int> connect_rrt(Graph* rrt_tree, double* map, int x_size, int y_size, do
 	return connect_return;
 }
 
-vector<int> extend_rrt(Graph* rrt_tree, double* map, int x_size, int y_size, double* current_sample_angles, int numofDOFs){
+vector<int> extend_rrt(Tree* rrt_tree, double* map, int x_size, int y_size, double* current_sample_angles, int numofDOFs){
 	/*
 	For first index element
 	Trapped = -1
@@ -110,7 +101,7 @@ vector<int> extend_rrt(Graph* rrt_tree, double* map, int x_size, int y_size, dou
 	}
 }
 
-vector<int> extend_rrt_star(Graph* rrt_tree, double* map, int x_size, int y_size, double* current_sample_angles, int numofDOFs){
+vector<int> extend_rrt_star(Tree* rrt_tree, double* map, int x_size, int y_size, double* current_sample_angles, int numofDOFs){
 	/*
 	For first index element
 	Trapped = -1
@@ -179,7 +170,7 @@ vector<int> extend_rrt_star(Graph* rrt_tree, double* map, int x_size, int y_size
 							(*it)->parent_id = cur_Node->node_id;
 							(*it)->cost = cur_Node->cost + distance_to_neighbor;
 							rrt_tree->propagate_costs(*it);
-							mexPrintf("Second Rewiring \n");
+							//mexPrintf("Second Rewiring \n");
 						}
 					}
 				}
@@ -255,7 +246,6 @@ vector<int> extend_rrt_star(Graph* rrt_tree, double* map, int x_size, int y_size
 					}
 				}
 			}
-
 			extend_return[0] = 0;
 			extend_return[1] = cur_Node->parent_id;
 			extend_return[2] = cur_Node->node_id;
@@ -265,12 +255,8 @@ vector<int> extend_rrt_star(Graph* rrt_tree, double* map, int x_size, int y_size
 			extend_return[0] = -1;
 			return extend_return;
 		}
-
-
 	}
-
 }
-
 
 void build_rrt(double* map, int x_size, int y_size, double* armstart_anglesV_rad, double* armgoal_anglesV_rad,
 	int numofDOFs, double*** plan, int* planlength){
@@ -286,7 +272,7 @@ void build_rrt(double* map, int x_size, int y_size, double* armstart_anglesV_rad
 	*plan = NULL;
 	*planlength = 0;
 
-	Graph rrt;
+	Tree rrt;
 	rrt.add_Vertex(armstart_anglesV_rad[0], armstart_anglesV_rad[1], armstart_anglesV_rad[2], armstart_anglesV_rad[3], armstart_anglesV_rad[4]);
 
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -294,8 +280,8 @@ void build_rrt(double* map, int x_size, int y_size, double* armstart_anglesV_rad
 	std::uniform_real_distribution<double> bias_distribution(0.0,1.2);
 	std::uniform_real_distribution<double> uni_distribution(0.0,1.0);
 	int num_vertices = 0;
-	while (num_vertices <= max_iter){
-		num_vertices = rrt.get_number_vertices();
+	while (num_vertices < max_iter){
+		
 		bias_random = bias_distribution(generator);
 		if (bias_random > 1){
 			extend_track = extend_rrt(&rrt, map, x_size, y_size, armgoal_anglesV_rad, numofDOFs);
@@ -331,7 +317,8 @@ void build_rrt(double* map, int x_size, int y_size, double* armstart_anglesV_rad
 				current_sample_angles[j] = 2*PI*uni_distribution(generator);
 			}
 			extend_track = extend_rrt(&rrt, map, x_size, y_size, current_sample_angles, numofDOFs);
-		}	
+		}
+		num_vertices = rrt.get_number_vertices();	
 	}
 	//rrt.print_Vertices();
 	mexPrintf("Did not find a path after expansion of %d states\n", max_iter);
@@ -352,7 +339,7 @@ void build_rrt_connect(double* map, int x_size, int y_size, double* armstart_ang
 	*plan = NULL;
 	*planlength = 0;
 
-	Graph rrtA, rrtB;
+	Tree rrtA, rrtB;
 	rrtA.add_Vertex(armstart_anglesV_rad[0], armstart_anglesV_rad[1], armstart_anglesV_rad[2], armstart_anglesV_rad[3], armstart_anglesV_rad[4]);
 	rrtB.add_Vertex(armgoal_anglesV_rad[0], armgoal_anglesV_rad[1], armgoal_anglesV_rad[2], armgoal_anglesV_rad[3], armgoal_anglesV_rad[4]);
 
@@ -360,14 +347,14 @@ void build_rrt_connect(double* map, int x_size, int y_size, double* armstart_ang
 	std::default_random_engine generator(seed);
 	std::uniform_real_distribution<double> uni_distribution(0.0,1.0);
 
-	Graph* Current_Tree;
-	Graph* Other_Tree;
+	Tree* Current_Tree;
+	Tree* Other_Tree;
 	Current_Tree = &rrtA;
 	Other_Tree = &rrtB;
 
 	int num_vertices = 0;
-	while (num_vertices <= max_iter){
-		num_vertices = rrtA.get_number_vertices() + rrtB.get_number_vertices();
+	while (num_vertices < max_iter){
+		
 		for (int j =0; j<numofDOFs; ++j){
 			current_sample_angles[j] = 2*PI*uni_distribution(generator);
 		}
@@ -422,10 +409,12 @@ void build_rrt_connect(double* map, int x_size, int y_size, double* armstart_ang
 			}
 		}
 		// Swapping Trees
-		Graph* temp_graph;
+		Tree* temp_graph;
 		temp_graph = Current_Tree;
 		Current_Tree = Other_Tree;
 		Other_Tree = temp_graph;
+
+		num_vertices = rrtA.get_number_vertices() + rrtB.get_number_vertices();
 	}
 	mexPrintf("Did not find a path after expansion of %d states\n", max_iter);
 	return;
@@ -444,7 +433,7 @@ void build_rrt_star(double* map, int x_size, int y_size, double* armstart_angles
 	*plan = NULL;
 	*planlength = 0;
 
-	Graph rrt_star;
+	Tree rrt_star;
 	rrt_star.add_Vertex(armstart_anglesV_rad[0], armstart_anglesV_rad[1], armstart_anglesV_rad[2], armstart_anglesV_rad[3], armstart_anglesV_rad[4]);
 
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -453,8 +442,7 @@ void build_rrt_star(double* map, int x_size, int y_size, double* armstart_angles
 	std::uniform_real_distribution<double> uni_distribution(0.0,1.0);
 	int num_vertices = 0;
 	
-	while (num_vertices <= max_iter){
-		num_vertices = rrt_star.get_number_vertices();
+	while (num_vertices < max_iter){
 		bias_random = bias_distribution(generator);
 		if (bias_random > 1){
 			extend_track = extend_rrt_star(&rrt_star, map, x_size, y_size, armgoal_anglesV_rad, numofDOFs);
@@ -492,6 +480,7 @@ void build_rrt_star(double* map, int x_size, int y_size, double* armstart_angles
 			}
 			extend_track = extend_rrt_star(&rrt_star, map, x_size, y_size, current_sample_angles, numofDOFs);
 		}	
+		num_vertices = rrt_star.get_number_vertices();
 	}
 	//rrt_star.print_Vertices();
 	mexPrintf("Did not find a path after expansion of %d states\n", max_iter);
@@ -503,6 +492,155 @@ void build_prm(double* map, int x_size, int y_size, double* armstart_anglesV_rad
 	int numofDOFs, double*** plan, int* planlength){
 
 	mexPrintf("Entered Probability Road Map\n");
+	const int max_iter = 20000;
+	double current_sample_angles[5],adding_angles[5], difference_angles[5];
+	int arm_movement_sign[5];
+	int obstacle_check, number_succesors;
+	//no plan by default
+	*plan = NULL;
+	*planlength = 0;
 
+	Graph prm;
+
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
+	std::uniform_real_distribution<double> uni_distribution(0.0,1.0);
+	int num_vertices = 0;
+	Node* Cur_Node;
+	Node* Start_Node;
+	Node* Goal_Node;
+	Node* Nearest_node;
+	double nearest_dist;
+	list<Node*> Neighbourhood_Start;
+	list<Node*> Neighbourhood_Goal;
+
+	while (num_vertices < max_iter){
+
+		for (int j =0; j<numofDOFs; ++j){
+			current_sample_angles[j] = 2*PI*uni_distribution(generator);
+		}
+		if (IsValidArmConfiguration(current_sample_angles, numofDOFs, map, x_size, y_size)){
+			Cur_Node = prm.add_Vertex(current_sample_angles[0],current_sample_angles[1],current_sample_angles[2],current_sample_angles[3],current_sample_angles[4]);
+			list<Node*> Neighbourhood_V;
+			prm.getNearestNeighboursinNeighbourhood(current_sample_angles, Cur_Node->node_id, &Neighbourhood_V, PRM_NEIGHBORHOOD);
+			//int list_size = Neighbourhood_V.size();
+			for (list<Node*>::iterator it = Neighbourhood_V.begin(); it != Neighbourhood_V.end(); it++){
+				number_succesors = (*it)->edges.size();
+				if (number_succesors < MAX_SUCCESORS_PRM){
+					obstacle_check = IsValidArmMovement(*it, Cur_Node, &distance_to_neighbor, numofDOFs, map, x_size, y_size);
+					if (obstacle_check){
+						prm.add_Edge(Cur_Node, *it, distance_to_neighbor);
+					}
+				}
+			}
+			//mexPrintf("Number of Neighbours: %d\n",list_size);
+		}
+		else{
+			continue;
+		}
+		num_vertices = prm.get_number_vertices();
+	}	 
+
+// Connecting Start Node to PRM
+	Start_Node = prm.add_Vertex(armstart_anglesV_rad[0],armstart_anglesV_rad[1],armstart_anglesV_rad[2],armstart_anglesV_rad[3],armstart_anglesV_rad[4]);
+	Start_Node->parent = NULL;	
+	prm.getNearestNeighboursinNeighbourhood(armstart_anglesV_rad, Start_Node->node_id, &Neighbourhood_Start, PRM_NEIGHBORHOOD);
+	mexPrintf("Start Neighbors: %d\n",Neighbourhood_Start.size());
+	for (list<Node*>::iterator it = Neighbourhood_Start.begin(); it != Neighbourhood_Start.end(); it++){
+		obstacle_check = IsValidArmMovement(*it, Start_Node, &distance_to_neighbor, numofDOFs, map, x_size, y_size);
+		if (obstacle_check){
+			if ((Start_Node->edges.size() <= MAX_START_NEIGHBORS)){
+				prm.add_Edge(Start_Node, *it, distance_to_neighbor);
+		 		//mexPrintf("Start Node Connected to Graph\n");
+			}
+			else
+				break;
+		}
+	}
+
+// Connecting Goal Node to PRM
+	Goal_Node = prm.add_Vertex(armgoal_anglesV_rad[0],armgoal_anglesV_rad[1],armgoal_anglesV_rad[2],armgoal_anglesV_rad[3],armgoal_anglesV_rad[4]);
+	Goal_Node->is_closed = false;
+	prm.getNearestNeighboursinNeighbourhood(armgoal_anglesV_rad, Goal_Node->node_id, &Neighbourhood_Goal, PRM_NEIGHBORHOOD);
+	mexPrintf("Goal Neighbors: %d\n",Neighbourhood_Goal.size());
+	for (list<Node*>::iterator it = Neighbourhood_Goal.begin(); it != Neighbourhood_Goal.end(); it++){
+		obstacle_check = IsValidArmMovement(*it, Goal_Node, &distance_to_neighbor, numofDOFs, map, x_size, y_size);
+		if (obstacle_check){
+			if ((Goal_Node->edges.size() <= MAX_GOAL_NEIGHBORS)){
+				prm.add_Edge(Goal_Node, *it, distance_to_neighbor);
+		 		//mexPrintf("Goal Node Connected to Graph\n");
+			}
+			else
+				break;
+		}
+	}
+
+	//Dijkstra on the Updated Graph
+	std::priority_queue<Node*> open_set;
+	Node* Edge_Node;
+	double diff_cost;
+	open_set.push(Start_Node);
+	// mexPrintf("Start Node id: %d\n", Start_Node->node_id);
+	// mexPrintf("Goal Node id: %d\n", Goal_Node->node_id);
+
+	while (!open_set.empty() && Goal_Node->is_closed == false){
+		Cur_Node = open_set.top();
+		while(Cur_Node->is_closed){
+			open_set.pop();	
+			Cur_Node = open_set.top();
+		}
+		open_set.pop();
+		Cur_Node->is_closed = true;
+
+		for (list<Edge*>::iterator it = Cur_Node->edges.begin(); it != Cur_Node->edges.end(); it++){
+			if ((*it)->vertex1->node_id == Cur_Node->node_id)
+				Edge_Node = (*it)->vertex2;
+			else
+				Edge_Node = (*it)->vertex1;
+			diff_cost = (*it)->cost;
+
+			if (Edge_Node->is_visited == false){
+				Edge_Node->parent = Cur_Node;
+				Edge_Node->cost = Cur_Node->cost + diff_cost;
+				open_set.push(Edge_Node);
+				Edge_Node->is_visited = true;
+			}
+			else {
+				if (Edge_Node->cost > (Cur_Node->cost + diff_cost)){
+					Edge_Node->parent = Cur_Node;
+					Edge_Node->cost = Cur_Node->cost + diff_cost;
+					open_set.push(Edge_Node);
+					Edge_Node->is_visited = true;
+				}
+			}
+		}	
+	}
+
+	list<Node*> PRM_Path;
+	Node* temp_Node = Goal_Node;
+	while (temp_Node->node_id != Start_Node->node_id){
+		PRM_Path.push_front(temp_Node);
+		temp_Node = temp_Node->parent;
+	}
+	PRM_Path.push_front(temp_Node);
+	// for (list<Node*>::iterator it = PRM_Path.begin(); it != PRM_Path.end(); it++){
+	// 	mexPrintf("Node_id: %d\n", (*it)->node_id);
+	// }
+
+	int numofsamples = PRM_Path.size();
+	*plan = (double**) malloc(numofsamples*sizeof(double*));
+	int p = 0;
+	for (list<Node*>::iterator it = PRM_Path.begin(); it != PRM_Path.end(); it++){
+		(*plan)[p] = (double*) malloc(numofDOFs*sizeof(double)); 
+		(*plan)[p][0] = (*it)->theta_1;
+		(*plan)[p][1] = (*it)->theta_2;
+		(*plan)[p][2] = (*it)->theta_3;
+		(*plan)[p][3] = (*it)->theta_4;
+		(*plan)[p][4] = (*it)->theta_5;
+		p++;
+	}    
+	*planlength = numofsamples;
+
+	prm.print_Edges();
 	return;
 }

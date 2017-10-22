@@ -3,12 +3,14 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <queue>
 #include <random>
 #include <iterator>
 #include <ctime>
 #include <chrono>
 #include "graphheader.hpp"
 #include "plannerheader.hpp"
+#include "constants.hpp"
 
 using namespace std;
 
@@ -21,17 +23,6 @@ using namespace std;
 #if !defined(MIN)
 #define	MIN(A, B)	((A) < (B) ? (A) : (B))
 #endif
-
-#define PI 3.141592654
-
-//the length of each link in the arm (should be the same as the one used in runtest.m)
-#define LINKLENGTH_CELLS 10
-
-#define EPS 0.3
-
-# define VOL_HYPER 5.264
-# define MAX_NEIGHBOR EPS
-# define GAMMA 1
 
 void ContXY2Cell(double x, double y, short unsigned int* pX, short unsigned int *pY, int x_size, int y_size)
 {

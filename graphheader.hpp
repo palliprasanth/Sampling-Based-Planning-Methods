@@ -10,6 +10,7 @@ typedef struct Edge Edge;
 struct Node{
 	int node_id;
 	int parent_id;
+	Node* parent;
 	double cost;
 	bool is_visited;
 	double theta_1;
@@ -18,25 +19,33 @@ struct Node{
 	double theta_4;
 	double theta_5;
 	list<Node*> children;
+	list<Edge*> edges;
+	bool is_closed;
+
+	bool operator<(const Node& node_2) const
+	{
+		return cost < node_2.cost;
+	}
 };
 
 
 struct Edge{
-	int node1_id;
-	int node2_id;
+	Node* vertex1;
+	Node* vertex2;
+	double cost;
 };
 
 
-class Graph{
-private:
+class Tree{
+protected:
 	list<Node> Vertices;
 	//list<Edge> Edges;
 	int counter;
 	int number_of_vertices;
 public:
-	Graph();
+	Tree();
 	list<Node>* get_Vertices();
-	list<Edge>* get_Edges();
+	//list<Edge>* get_Edges();
 	int get_number_vertices();
 	Node* get_Vertex(int);
 	void add_Vertex(double, double, double, double, double);
@@ -53,7 +62,18 @@ public:
 	void propagate_costs(Node*);
 	void print_Vertices();
 	//void print_Edges();
-	~Graph();		
+	~Tree();		
+};
+
+
+class Graph : public Tree{
+private:
+	list<Edge> Edges;
+public:
+	list<Edge>* get_Edges();
+	Node* add_Vertex(double, double, double, double, double);
+	void add_Edge(Node*, Node*, double);
+	void print_Edges();
 };
 
 

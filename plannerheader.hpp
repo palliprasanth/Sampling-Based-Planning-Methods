@@ -39,9 +39,9 @@ double convert_to_unit_return_norm(double* ,int);
 double get_neighbourhood_distance(int);
 void wrap_to_2pi(double* );
 
-vector<int> connect_rrt(Graph* , double*, int, int, double*, int);
-vector<int> extend_rrt(Graph* , double* , int , int , double* , int );
-vector<int> extend_rrt_star(Graph* , double* , int , int , double* , int );
+vector<int> connect_rrt(Tree* , double*, int, int, double*, int);
+vector<int> extend_rrt(Tree* , double* , int , int , double* , int );
+vector<int> extend_rrt_star(Tree* , double* , int , int , double* , int );
 void build_rrt(double*, int, int, double*, double*, int, double***, int*);
 void build_rrt_connect(double*, int, int, double*, double*, int, double***, int*);
 void build_rrt_star(double*, int, int, double*, double*, int, double***, int*);
